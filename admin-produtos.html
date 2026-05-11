@@ -230,8 +230,16 @@
               <input id="category" name="category" type="text" required placeholder="Ex: Estrutural" />
             </div>
             <div class="field">
-              <label for="img">URL da imagem</label>
-              <input id="img" name="img" type="url" required placeholder="https://..." />
+              <label for="imgFile">Imagem do produto</label>
+              <input id="imgFile" name="imgFile" type="file" accept="image/*" />
+            </div>
+            <div class="field">
+              <label for="img">URL da imagem (fallback)</label>
+              <input id="img" name="img" type="url" placeholder="https://..." />
+            </div>
+            <div class="field">
+              <label for="videoFile">Vídeo do produto (upload opcional)</label>
+              <input id="videoFile" name="videoFile" type="file" accept="video/*" />
             </div>
             <div class="field">
               <label for="videoId">ID do vídeo YouTube (opcional)</label>
@@ -287,6 +295,8 @@
       const list = document.getElementById('product-list');
       const count = document.getElementById('product-count');
       const clearButton = document.getElementById('clear-storage');
+      const imgFileInput = document.getElementById('imgFile');
+      const videoFileInput = document.getElementById('videoFile');
 
       function getStoredProducts() {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -316,16 +326,54 @@
         tag.textContent = product.category;
         header.append(title, tag);
 
-        const image = document.createElement('img');
-        image.src = product.img;
-        image.alt = product.name;
-        image.loading = 'lazy';
+        const hasVideoUpload = product.videoType === 'upload' && product.videoSrc;
+        const hasYouTubeVideo = (product.videoType === 'youtube' && product.videoId) || product.videoId;
+
+        const media = document.createElement('div');
+        if (hasVideoUpload) {
+          const video = document.createElement('video');
+          video.controls = true;
+          video.src = product.videoSrc;
+          video.poster = product.img;
+          video.className = 'product-media';
+          video.style.borderRadius = '16px';
+          video.style.maxHeight = '320px';
+          video.style.width = '100%';
+          media.appendChild(video);
+        } else {
+          const image = document.createElement('img');
+          image.src = product.img;
+          image.alt = product.name;
+          image.loading = 'lazy';
+          image.className = 'product-img';
+          media.appendChild(image);
+
+          if (hasYouTubeVideo) {
+            const toggleButton = document.createElement('button');
+            toggleButton.type = 'button';
+            toggleButton.className = 'video-toggle';
+            toggleButton.textContent = '▶ Ver vídeo';
+            toggleButton.addEventListener('click', () => {
+              const iframe = document.createElement('iframe');
+              iframe.className = 'product-iframe';
+              iframe.src = `https://www.youtube.com/embed/${product.videoId}?autoplay=1`;
+              iframe.title = `Vídeo ${product.name}`;
+              iframe.allow = 'autoplay; encrypted-media';
+              iframe.allowFullscreen = true;
+              media.innerHTML = '';
+              media.appendChild(iframe);
+              toggleButton.textContent = '📷 Ver foto';
+              toggleButton.disabled = true;
+            });
+            media.appendChild(toggleButton);
+          }
+        }
 
         const meta = document.createElement('div');
         meta.className = 'product-meta';
         meta.innerHTML = `
           <div><strong>Preço:</strong> ${product.price}</div>
-          <div><strong>ID do vídeo:</strong> ${product.videoId || 'Nenhum'}</div>
+          <div><strong>Vídeo:</strong> ${hasVideoUpload ? 'Upload enviado' : hasYouTubeVideo ? 'YouTube' : 'Nenhum'}</div>
         `;
 
         const actions = document.createElement('div');
@@ -337,7 +385,7 @@
         removeButton.addEventListener('click', () => removeProduct(product.id));
         actions.appendChild(removeButton);
 
-        card.append(header, image, meta, actions);
+        card.append(header, media, meta, actions);
         return card;
       }
 
@@ -362,6 +410,72 @@
         window.setTimeout(() => {
           feedback.hidden = true;
         }, 2500);
+      }
+
+      function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function submitProduct(event) {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const name = String(formData.get('name') || '').trim();
+        const price = String(formData.get('price') || '').trim();
+        const category = String(formData.get('category') || '').trim();
+        const imgUrl = String(formData.get('img') || '').trim();
+        const videoId = String(formData.get('videoId') || '').trim() || null;
+        const imgFile = formData.get('imgFile');
+        const videoFile = formData.get('videoFile');
+
+        if (!name || !price || !category) {
+          showFeedback('Preencha todos os campos obrigatórios.');
+          return;
+        }
+
+        let imgSrc = '';
+        if (imgFile && imgFile.size) {
+          imgSrc = await readFileAsDataURL(imgFile);
+        } else if (imgUrl) {
+          imgSrc = imgUrl;
+        }
+
+        if (!imgSrc) {
+          showFeedback('Informe uma imagem via upload ou URL.');
+          return;
+        }
+
+        let videoType = null;
+        let videoSrc = null;
+        if (videoFile && videoFile.size) {
+          videoType = 'upload';
+          videoSrc = await readFileAsDataURL(videoFile);
+        } else if (videoId) {
+          videoType = 'youtube';
+        }
+
+        const products = getStoredProducts();
+        const nextId = Math.max(0, ...products.map((product) => Number(product.id) || 0)) + 1;
+        const newProduct = {
+          id: nextId,
+          name,
+          price,
+          category,
+          img: imgSrc,
+          videoType,
+          videoSrc,
+          videoId: videoType === 'youtube' ? videoId : null,
+        };
+
+        products.push(newProduct);
+        saveProducts(products);
+        renderProducts();
+        form.reset();
+        showFeedback('Produto cadastrado com sucesso!');
       }
 
       function removeProduct(id) {
