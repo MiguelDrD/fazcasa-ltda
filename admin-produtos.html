@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administração de Produtos | FAZCASA</title>
+    <style>
+      :root {
+        font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #1f2937;
+        background: #f7fafc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 0 16px 32px;
+        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+
+      header {
+        max-width: 1200px;
+        margin: 0 auto 24px;
+        padding: 24px 0;
+        text-align: center;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: clamp(2rem, 2.4vw, 3rem);
+        letter-spacing: -0.04em;
+      }
+
+      header p {
+        margin: 8px auto 0;
+        max-width: 720px;
+        color: #4b5563;
+        font-size: 1rem;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .grid {
+        display: grid;
+        gap: 24px;
+      }
+
+      .card {
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+      }
+
+      .card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      label {
+        font-weight: 600;
+        color: #111827;
+      }
+
+      input,
+      button,
+      select {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 1rem;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+      }
+
+      input:focus,
+      select:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+
+      button {
+        border: none;
+        background: #2563eb;
+        color: #ffffff;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      button:hover {
+        background: #1d4ed8;
+      }
+
+      .message {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+
+      .product-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .product-card {
+        display: grid;
+        gap: 16px;
+        padding: 18px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        background: #ffffff;
+      }
+
+      .product-card img {
+        width: 100%;
+        border-radius: 14px;
+        object-fit: cover;
+        min-height: 200px;
+      }
+
+      .product-card header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
+
+      .product-card strong {
+        color: #111827;
+      }
+
+      .tag {
+        display: inline-flex;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #93c5fd;
+        color: #1e3a8a;
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .product-meta {
+        display: grid;
+        gap: 4px;
+        color: #374151;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .secondary-btn {
+        background: #e2e8f0;
+        color: #1f2937;
+      }
+
+      .list-summary {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        color: #4b5563;
+      }
+
+      @media (min-width: 900px) {
+        .grid-2 {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .product-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 1200px) {
+        .product-list {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Administração de Produtos</h1>
+      <p>Use a área de cadastro para adicionar novos produtos ao catálogo em "Todos os Produtos". Os itens ficam salvos localmente no navegador.</p>
+    </header>
+
+    <main class="container">
+      <section class="card grid grid-2">
+        <div>
+          <h2>Novo Produto</h2>
+          <form id="product-form">
+            <div class="field">
+              <label for="name">Nome do produto</label>
+              <input id="name" name="name" type="text" required placeholder="Ex: Cimento CP-II 50kg" />
+            </div>
+            <div class="field">
+              <label for="price">Preço</label>
+              <input id="price" name="price" type="text" required placeholder="Ex: R$ 42,90" />
+            </div>
+            <div class="field">
+              <label for="category">Categoria</label>
+              <input id="category" name="category" type="text" required placeholder="Ex: Estrutural" />
+            </div>
+            <div class="field">
+              <label for="img">URL da imagem</label>
+              <input id="img" name="img" type="url" required placeholder="https://..." />
+            </div>
+            <div class="field">
+              <label for="videoId">ID do vídeo YouTube (opcional)</label>
+              <input id="videoId" name="videoId" type="text" placeholder="Ex: dQw4w9WgXcQ" />
+            </div>
+            <button type="submit">Cadastrar produto</button>
+          </form>
+          <div id="feedback" class="message" hidden>Produto cadastrado com sucesso!</div>
+        </div>
+
+        <div>
+          <h2>Todos os Produtos</h2>
+          <div class="list-summary">
+            <span id="product-count">0 produtos cadastrados</span>
+            <button id="clear-storage" class="secondary-btn">Limpar cadastro</button>
+          </div>
+          <div id="product-list" class="product-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const defaultProducts = [
+        {
+          id: 1,
+          name: 'Cimento CP-II 50kg',
+          price: 'R$ 42,90',
+          category: 'Estrutural',
+          img: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&h=260&fit=crop',
+          videoId: 'dQw4w9WgXcQ',
+        },
+        {
+          id: 2,
+          name: 'Tijolo Cerâmico 8 Furos',
+          price: 'R$ 1,39',
+          category: 'Alvenaria',
+          img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=260&fit=crop',
+          videoId: null,
+        },
+        {
+          id: 3,
+          name: 'Areia Lavada (m³)',
+          price: 'R$ 159,00',
+          category: 'Agregados',
+          img: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&h=260&fit=crop',
+          videoId: null,
+        },
+      ];
+
+      const STORAGE_KEY = 'fazcasa_admin_products';
+      const form = document.getElementById('product-form');
+      const feedback = document.getElementById('feedback');
+      const list = document.getElementById('product-list');
+      const count = document.getElementById('product-count');
+      const clearButton = document.getElementById('clear-storage');
+
+      function getStoredProducts() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [...defaultProducts];
+        try {
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) return [...defaultProducts];
+          return parsed.length ? parsed : [...defaultProducts];
+        } catch (error) {
+          return [...defaultProducts];
+        }
+      }
+
+      function saveProducts(products) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      }
+
+      function createProductCard(product) {
+        const card = document.createElement('article');
+        card.className = 'product-card';
+
+        const header = document.createElement('header');
+        const title = document.createElement('strong');
+        title.textContent = product.name;
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = product.category;
+        header.append(title, tag);
+
+        const image = document.createElement('img');
+        image.src = product.img;
+        image.alt = product.name;
+        image.loading = 'lazy';
+
+        const meta = document.createElement('div');
+        meta.className = 'product-meta';
+        meta.innerHTML = `
+          <div><strong>Preço:</strong> ${product.price}</div>
+          <div><strong>ID do vídeo:</strong> ${product.videoId || 'Nenhum'}</div>
+        `;
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'secondary-btn';
+        removeButton.textContent = 'Excluir';
+        removeButton.addEventListener('click', () => removeProduct(product.id));
+        actions.appendChild(removeButton);
+
+        card.append(header, image, meta, actions);
+        return card;
+      }
+
+      function renderProducts() {
+        const products = getStoredProducts();
+        list.innerHTML = '';
+        if (!products.length) {
+          list.innerHTML = '<p>Nenhum produto cadastrado no momento.</p>';
+          count.textContent = '0 produtos cadastrados';
+          return;
+        }
+
+        products.forEach((product) => {
+          list.appendChild(createProductCard(product));
+        });
+        count.textContent = `${products.length} produto${products.length === 1 ? '' : 's'} cadastrado${products.length === 1 ? '' : 's'}`;
+      }
+
+      function showFeedback(message) {
+        feedback.textContent = message;
+        feedback.hidden = false;
+        window.setTimeout(() => {
+          feedback.hidden = true;
+        }, 2500);
+      }
+
+      function removeProduct(id) {
+        const products = getStoredProducts().filter((product) => product.id !== id);
+        saveProducts(products);
+        renderProducts();
+        showFeedback('Produto removido com sucesso.');
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const name = String(formData.get('name') || '').trim();
+        const price = String(formData.get('price') || '').trim();
+        const category = String(formData.get('category') || '').trim();
+        const img = String(formData.get('img') || '').trim();
+        const videoId = String(formData.get('videoId') || '').trim() || null;
+
+        if (!name || !price || !category || !img) {
+          showFeedback('Preencha todos os campos obrigatórios.');
+          return;
+        }
+
+        const products = getStoredProducts();
+        const nextId = Math.max(0, ...products.map((product) => Number(product.id) || 0)) + 1;
+        const newProduct = { id: nextId, name, price, category, img, videoId };
+        products.push(newProduct);
+        saveProducts(products);
+        renderProducts();
+        form.reset();
+        showFeedback('Produto cadastrado com sucesso!');
+      });
+
+      clearButton.addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        renderProducts();
+        showFeedback('Cadastro reiniciado para os produtos padrão.');
+      });
+
+      renderProducts();
+    </script>
+  </body>
+</html>
